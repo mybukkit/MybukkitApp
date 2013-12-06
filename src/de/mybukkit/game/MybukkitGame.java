@@ -18,12 +18,12 @@ public class MybukkitGame extends Game {
 	@Override
 	public void render() {
 		super.render();
-		if(Gdx.input.isKeyPressed(Keys.R))
+		if (Gdx.input.isKeyPressed(Keys.R))
 			try {
 				setScreen(getScreen().getClass().newInstance());
-			} catch(InstantiationException e) {
+			} catch (InstantiationException e) {
 				e.printStackTrace();
-			} catch(IllegalAccessException e) {
+			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
 	}
