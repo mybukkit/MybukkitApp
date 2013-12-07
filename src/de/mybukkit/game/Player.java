@@ -8,13 +8,13 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.Vector2;
 
-
 public class Player extends Sprite implements InputProcessor {
 
 	/** the movement velocity */
 	private Vector2 velocity = new Vector2();
 
-	private float speed = 60 * 2, gravity = 60 * 1.8f, increment;// animationTime = 0,
+	private float speed = 60 * 2, gravity = 60 * 1.9f, increment;// animationTime
+																	// = 0,
 
 	private boolean canJump;
 
@@ -25,93 +25,102 @@ public class Player extends Sprite implements InputProcessor {
 	public Player(Sprite sprite, TiledMapTileLayer collisionLayer) {
 		super(sprite);
 		this.collisionLayer = collisionLayer;
-		setSize(collisionLayer.getWidth() * 2, collisionLayer.getHeight() * 2.0f);
-		
+		setSize(collisionLayer.getWidth() * 2,
+				collisionLayer.getHeight() * 2.0f);
+
 	}
+
 	@Override
-	public void draw(com.badlogic.gdx.graphics.g2d.Batch batch){
+	public void draw(com.badlogic.gdx.graphics.g2d.Batch batch) {
 		update(Gdx.graphics.getDeltaTime());
 		super.draw(batch);
 	}
+
 	public void update(float delta) {
 		// apply gravity
 		velocity.y -= gravity * delta;
 
 		// clamp velocity
-		if(velocity.y > speed)
+		if (velocity.y > speed)
 			velocity.y = speed;
-		else if(velocity.y < -speed)
+		else if (velocity.y < -speed)
 			velocity.y = -speed;
 
 		// save old position
 		float oldX = getX(), oldY = getY();
-		boolean collisionX = true, collisionY = true;
+		boolean collisionX = false, collisionY = false;
 
 		// move on x
 		setX(getX() + velocity.x * delta);
-		// calculate the increment for step in #collidesLeft() and #collidesRight()
+		// calculate the increment for step in #collidesLeft() and
+		// #collidesRight()
 		increment = collisionLayer.getTileWidth();
 		increment = getWidth() < increment ? getWidth() / 2 : increment / 2;
 
-		if(velocity.x < 0) // going left
+		if (velocity.x < 0) // going left
 			collisionX = collidesLeft();
-		else if(velocity.x > 0) // going right
+		else if (velocity.x > 0) // going right
 			collisionX = collidesRight();
 
 		// react to x collision
-		if(collisionX) {
+		if (collisionX) {
 			setX(oldX);
 			velocity.x = 0;
 		}
 
 		// move on y
-		setY(getY() + velocity.y * delta );
+		setY(getY() + velocity.y  * delta * 4);
 
-		// calculate the increment for step in #collidesBottom() and #collidesTop()
+		// calculate the increment for step in #collidesBottom() and
+		// #collidesTop()
 		increment = collisionLayer.getTileHeight();
 		increment = getHeight() < increment ? getHeight() / 5 : increment / 5;
 
-		if(velocity.y < 0) // going down
+		if (velocity.y < 0) // going down
 			canJump = collisionY = collidesBottom();
-		else if(velocity.y > 0) // going up
+		else if (velocity.y > 0) // going up
 			collisionY = collidesTop();
 
 		// react to y collision
-		if(collisionY) {
+		if (collisionY) {
 			setY(oldY);
 			velocity.y = 0;
 		}
 	}
+
 	private boolean isCellBlocked(float x, float y) {
-		Cell cell = collisionLayer.getCell((int) (x / collisionLayer.getTileWidth()), (int) (y / collisionLayer.getTileHeight()));
-		return cell != null && cell.getTile() != null && cell.getTile().getProperties().containsKey(blockedKey);
+		Cell cell = collisionLayer.getCell(
+				(int) (x / collisionLayer.getTileWidth()),
+				(int) (y / collisionLayer.getTileHeight()));
+		return cell != null && cell.getTile() != null
+				&& cell.getTile().getProperties().containsKey(blockedKey);
 	}
 
 	public boolean collidesRight() {
-		for(float step = 0; step <= getHeight(); step += increment)
-			if(isCellBlocked(getX() + getWidth(), getY() + step))
+		for (float step = 0; step <= getHeight(); step += increment)
+			if (isCellBlocked(getX() + getWidth(), getY() + step))
 				return true;
 		return false;
 	}
 
 	public boolean collidesLeft() {
-		for(float step = 0; step <= getHeight(); step += increment)
-			if(isCellBlocked(getX(), getY() + step))
+		for (float step = 0; step <= getHeight(); step += increment)
+			if (isCellBlocked(getX(), getY() + step))
 				return true;
 		return false;
 	}
 
 	public boolean collidesTop() {
-		for(float step = 0; step <= getWidth(); step += increment)
-			if(isCellBlocked(getX() + step, getY() + getHeight()))
+		for (float step = 0; step <= getWidth(); step += increment)
+			if (isCellBlocked(getX() + step, getY() + getHeight()))
 				return true;
 		return false;
 
 	}
 
 	public boolean collidesBottom() {
-		for(float step = 0; step <= getWidth(); step += increment)
-			if(isCellBlocked(getX() + step, getY()))
+		for (float step = 0; step <= getWidth(); step += increment)
+			if (isCellBlocked(getX() + step , getY()))
 				return true;
 		return false;
 	}
@@ -150,33 +159,33 @@ public class Player extends Sprite implements InputProcessor {
 
 	@Override
 	public boolean keyDown(int keycode) {
-		switch(keycode) {
+		switch (keycode) {
 		case Keys.W:
-			System.out.println("w gedr.");
-			if(canJump) {
-				velocity.y = speed / 1.8f;
+			// System.out.println("w gedr.");
+			if (canJump) {
+				velocity.y =speed ;
 				canJump = false;
-				
 			}
+			
 			break;
 		case Keys.A:
 			velocity.x = -speed;
-			//animationTime = 0;
+			// animationTime = 0;
 			break;
 		case Keys.D:
 			velocity.x = speed;
-			//animationTime = 0;
+			// animationTime = 0;
 		}
 		return true;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
-		switch(keycode) {
+		switch (keycode) {
 		case Keys.A:
 		case Keys.D:
 			velocity.x = 0;
-			//animationTime = 0;
+			// animationTime = 0;
 		}
 		return true;
 	}

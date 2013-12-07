@@ -80,8 +80,8 @@ public class Play implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		camera.viewportWidth = width / 0.25f;
-		camera.viewportHeight = height / 0.25f;
+		camera.viewportWidth = width / 1.5f;
+		camera.viewportHeight = height / 1.5f;
 		
 	}
 
@@ -101,7 +101,8 @@ public class Play implements Screen {
 
 		Gdx.input.setInputProcessor(player);
 		
-	
+		TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get("background");
+		
 		
 
 	}
