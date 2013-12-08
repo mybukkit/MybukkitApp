@@ -22,6 +22,10 @@ public class Play implements Screen {
 	private int[] background = new int[] {0}, foreground = new int[] {1};
 	
 	private ShapeRenderer sr;
+	private int level = Player.next;
+	
+		
+	
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -87,7 +91,8 @@ public class Play implements Screen {
 
 	@Override
 	public void show() {
-		map = new TmxMapLoader().load("maps/map.tmx");
+		
+		map = new TmxMapLoader().load("maps/map"+level +".tmx");
 
 		renderer = new OrthogonalTiledMapRenderer(map);
 //		sr = new ShapeRenderer();
