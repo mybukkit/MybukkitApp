@@ -90,7 +90,7 @@ public class Play implements Screen {
 	}
 
 	@Override
-	public void show() {
+	public  void show() {
 		
 		map = new TmxMapLoader().load("maps/map"+level +".tmx");
 

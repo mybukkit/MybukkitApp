@@ -12,7 +12,7 @@ public class Player extends Sprite implements InputProcessor {
 
 	/** the movement velocity */
 	private Vector2 velocity = new Vector2();
-	private Vector2 veloclimp = new Vector2();
+
 	private float speed = 60 * 2, gravity = 60 * 1.9f, increment;// animationTime
 																	// = 0,
 
@@ -62,6 +62,7 @@ public class Player extends Sprite implements InputProcessor {
 		
 		// move on x
 		setX(getX() + velocity.x * delta);
+		
 		// calculate the increment for step in #collidesLeft() and
 		// #collidesRight()
 		increment = collisionLayer.getTileWidth();
@@ -77,7 +78,7 @@ public class Player extends Sprite implements InputProcessor {
 			setX(oldX);
 			velocity.x = 0;
 		}
-
+		
 		// move on y
 		setY(getY() + velocity.y * delta * 4);
 
@@ -225,9 +226,6 @@ public class Player extends Sprite implements InputProcessor {
 			if (canJump == true && canclimp() == false) {
 				velocity.y = speed;
 				canJump = false;
-
-				// velocity.y = 0;
-				// canclimp = false;
 			}
 
 			break;
