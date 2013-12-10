@@ -27,6 +27,7 @@ public class Player extends Sprite implements InputProcessor {
 	private String climpKey = "climp";
 
 	private boolean canclimp = false;
+	private boolean collisionYc;
 
 	public static int next = 1;
 
@@ -57,7 +58,8 @@ public class Player extends Sprite implements InputProcessor {
 		// save old position
 		float oldX = getX(), oldY = getY();
 		boolean collisionX = false, collisionY = false;
-
+		collisionYc=false;
+		
 		// move on x
 		setX(getX() + velocity.x * delta);
 		// calculate the increment for step in #collidesLeft() and
@@ -77,19 +79,8 @@ public class Player extends Sprite implements InputProcessor {
 		}
 
 		// move on y
-		setY(getY() + velocity.y * delta *4);
-		
-		
-		
-		canclimp = collisionY = collidesclimp();
-		if (canclimp == true){
-			setY(getY() + velocity.y * delta);
-			gravity = 0;
-			
-		}else{
-		
-			gravity = 60 * 1.9f ;
-		}
+		setY(getY() + velocity.y * delta * 4);
+
 		// calculate the increment for step in #collidesBottom() and
 		// #collidesTop()
 		increment = collisionLayer.getTileHeight();
@@ -97,11 +88,10 @@ public class Player extends Sprite implements InputProcessor {
 
 		if (velocity.y < 0) { // going down
 			canJump = collisionY = collidesBottom();
-			//canclimp = collisionY = collidesclimp();
-		} else if (velocity.y > 0){ // going up
+		
+		} else if (velocity.y > 0) { // going up
 			collisionY = collidesTop();
-			//canclimp = collisionY = collidesclimp();
-			
+	
 		}
 		// react to y collision
 		if (collisionY) {
@@ -110,8 +100,6 @@ public class Player extends Sprite implements InputProcessor {
 		}
 
 	}
-
-
 
 	private boolean isCellBlocked(float x, float y) {
 		Cell cell = collisionLayer.getCell(
@@ -167,12 +155,14 @@ public class Player extends Sprite implements InputProcessor {
 				return true;
 		return false;
 	}
+
 	private boolean collidesclimp() {
 		for (float step = 0; step <= getWidth(); step += increment)
 			if (isCellclimp(getX() + step, getY()))
 				return true;
 		return false;
 	}
+
 	public boolean collidesnewlevel() {
 		if (isCellnextlevel(getX(), getY()))
 			return true;
@@ -211,20 +201,33 @@ public class Player extends Sprite implements InputProcessor {
 		this.collisionLayer = collisionLayer;
 	}
 
+	public boolean canclimp() {
+		collisionYc = collidesclimp();
+		if (collisionYc == true) {
+			canJump = false;
+			velocity.y = speed / 2;
+			gravity = 0;
+			return true;
+
+		} else {
+			
+			gravity = 60 * 1.9f;
+			return false;
+		}
+
+	}
+
 	@Override
 	public boolean keyDown(int keycode) {
 		switch (keycode) {
 		case Keys.W:
-			// System.out.println("w gedr.");
-			if (canJump == true && canclimp == false) {
+			canclimp();
+			if (canJump == true && canclimp() == false) {
 				velocity.y = speed;
 				canJump = false;
-			}
-			else if (canclimp == true){
-				velocity.y = speed/2;
-				canJump = false;
-				//velocity.y = 0;
-				//canclimp = false;
+
+				// velocity.y = 0;
+				// canclimp = false;
 			}
 
 			break;
@@ -236,35 +239,39 @@ public class Player extends Sprite implements InputProcessor {
 			velocity.x = speed;
 			// animationTime = 0;
 			break;
-		case Keys.S:
-			if (canclimp){
-				velocity.y = -speed;
-			}
 		}
+
 		return true;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
 		switch (keycode) {
-/*		case Keys.W:
-			if (canclimp == true){
-				velocity.y = 0;
-				gravity = 0;
-			}else{gravity = 60 * 1.9f;}*/
-			
+		
+		case Keys.W:
+			canclimp();
+		
+
 		case Keys.A:
 		case Keys.D:
 			velocity.x = 0;
 			// animationTime = 0;
-
 		}
 		return true;
 	}
 
 	@Override
 	public boolean keyTyped(char character) {
-		return false;
+		switch (character) {
+		case Keys.S:
+			if (canclimp()==true) {
+				velocity.y = -speed;
+			}
+
+			break;
+		}
+
+		return true;
 	}
 
 	@Override
