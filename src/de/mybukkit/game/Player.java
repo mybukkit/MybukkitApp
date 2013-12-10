@@ -3,6 +3,7 @@ package de.mybukkit.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
@@ -26,8 +27,17 @@ public class Player extends Sprite implements InputProcessor {
 
 	private String climpKey = "climp";
 
-	private boolean canclimp = false;
 	private boolean collisionYc;
+
+	private boolean climb;
+
+	private boolean collisionYco;
+
+	private boolean collisionYcu;
+
+	private boolean collisionYcm;
+
+	private boolean climbdown;
 
 	public static int next = 1;
 
@@ -40,9 +50,9 @@ public class Player extends Sprite implements InputProcessor {
 	}
 
 	@Override
-	public void draw(com.badlogic.gdx.graphics.g2d.Batch batch) {
+	public void draw(Batch spritebatch) {
 		update(Gdx.graphics.getDeltaTime());
-		super.draw(batch);
+		super.draw(spritebatch);
 	}
 
 	public void update(float delta) {
@@ -58,11 +68,11 @@ public class Player extends Sprite implements InputProcessor {
 		// save old position
 		float oldX = getX(), oldY = getY();
 		boolean collisionX = false, collisionY = false;
-		collisionYc=false;
-		
+		collisionYc = false;
+
 		// move on x
 		setX(getX() + velocity.x * delta);
-		
+
 		// calculate the increment for step in #collidesLeft() and
 		// #collidesRight()
 		increment = collisionLayer.getTileWidth();
@@ -78,7 +88,10 @@ public class Player extends Sprite implements InputProcessor {
 			setX(oldX);
 			velocity.x = 0;
 		}
-		
+		collisionYco = collidesclimpoben();
+		collisionYcu = collidesclimpunten();
+		collisionYcm = collidesclimpmitte();
+
 		// move on y
 		setY(getY() + velocity.y * delta * 4);
 
@@ -89,11 +102,29 @@ public class Player extends Sprite implements InputProcessor {
 
 		if (velocity.y < 0) { // going down
 			canJump = collisionY = collidesBottom();
-		
+
 		} else if (velocity.y > 0) { // going up
 			collisionY = collidesTop();
-	
 		}
+		if (collisionYcm == true ) {
+			climb = true;
+			gravity = 0;
+		} 
+		else if (collisionYco == true && collisionYcm == false ) {
+			gravity = 0;
+			velocity.y = 0;
+			climb = false;
+			collisionY = true;
+		} else if (collisionYcu == true && collisionYcm == false) {
+			climbdown = true;
+			climb = false;
+		}else {
+			climb = false;
+			gravity = 60 * 1.9f;
+			
+		}
+		
+
 		// react to y collision
 		if (collisionY) {
 			setY(oldY);
@@ -157,7 +188,21 @@ public class Player extends Sprite implements InputProcessor {
 		return false;
 	}
 
-	private boolean collidesclimp() {
+	private boolean collidesclimpoben() {
+		for (float step = 0; step <= getWidth(); step += increment)
+			if (isCellclimp(getX() + step, getY() - getHeight()))
+				return true;
+		return false;
+	}
+
+	private boolean collidesclimpunten() {
+		for (float step = 0; step <= getWidth(); step += increment)
+			if (isCellclimp(getX() + step, getY() + getHeight()))
+				return true;
+		return false;
+	}
+
+	private boolean collidesclimpmitte() {
 		for (float step = 0; step <= getWidth(); step += increment)
 			if (isCellclimp(getX() + step, getY()))
 				return true;
@@ -202,18 +247,24 @@ public class Player extends Sprite implements InputProcessor {
 		this.collisionLayer = collisionLayer;
 	}
 
-	public boolean canclimp() {
-		collisionYc = collidesclimp();
-		if (collisionYc == true) {
-			canJump = false;
+	public void canclimp() {
+
+		if (climb == true) {
 			velocity.y = speed / 2;
 			gravity = 0;
-			return true;
 
-		} else {
-			
-			gravity = 60 * 1.9f;
-			return false;
+		}/*
+		 * else { velocity.y = 0; gravity = 60 * 1.9f;
+		 * 
+		 * }
+		 */
+
+	}
+
+	public void jump() {
+		if (canJump == true && collisionYcm == false) {
+			velocity.y = speed;
+			canJump = false;
 		}
 
 	}
@@ -223,10 +274,7 @@ public class Player extends Sprite implements InputProcessor {
 		switch (keycode) {
 		case Keys.W:
 			canclimp();
-			if (canJump == true && canclimp() == false) {
-				velocity.y = speed;
-				canJump = false;
-			}
+			jump();
 
 			break;
 		case Keys.A:
@@ -245,10 +293,9 @@ public class Player extends Sprite implements InputProcessor {
 	@Override
 	public boolean keyUp(int keycode) {
 		switch (keycode) {
-		
+
 		case Keys.W:
 			canclimp();
-		
 
 		case Keys.A:
 		case Keys.D:
@@ -262,9 +309,7 @@ public class Player extends Sprite implements InputProcessor {
 	public boolean keyTyped(char character) {
 		switch (character) {
 		case Keys.S:
-			if (canclimp()==true) {
-				velocity.y = -speed;
-			}
+			canclimp();
 
 			break;
 		}
