@@ -39,13 +39,15 @@ public class Player extends Sprite implements InputProcessor {
 
 	private boolean climbdown;
 
+	private boolean climbup;
+
 	public static int next = 1;
 
 	public Player(Sprite sprite, TiledMapTileLayer collisionLayer) {
 		super(sprite);
 		this.collisionLayer = collisionLayer;
-		setSize(collisionLayer.getWidth() * 2,
-				collisionLayer.getHeight() * 2.0f);
+		setSize(collisionLayer.getWidth() * 1.5F,
+				collisionLayer.getHeight() * 1.5f);
 
 	}
 
@@ -106,24 +108,38 @@ public class Player extends Sprite implements InputProcessor {
 		} else if (velocity.y > 0) { // going up
 			collisionY = collidesTop();
 		}
-		if (collisionYcm == true ) {
+		if (collisionYcm == true) {
+			if (climbup == false) {
+				velocity.y = 0;
+			}
 			climb = true;
 			gravity = 0;
-		} 
-		else if (collisionYco == true && collisionYcm == false ) {
-			gravity = 0;
-			velocity.y = 0;
-			climb = false;
-			collisionY = true;
-		} else if (collisionYcu == true && collisionYcm == false) {
 			climbdown = true;
+		} else if (collisionYco == true && collisionYcm == false) {
+			gravity = 0;
+			if (collisionY == false && (velocity.y >= 0 || velocity.y == 0)){
+				collisionY = true;
+				velocity.y = 0;
+				setY(oldY);
+				canJump = true;
+			}
+			if (collisionY == true && velocity.y == 0){
+				collisionY = false;
+			}
+			
 			climb = false;
-		}else {
+			climbdown = true;
+			
+
+		} else if (collisionYco == true) {
+
+			climbdown = true;
+		} else {
 			climb = false;
 			gravity = 60 * 1.9f;
-			
+			climbdown = false;
+
 		}
-		
 
 		// react to y collision
 		if (collisionY) {
@@ -190,14 +206,14 @@ public class Player extends Sprite implements InputProcessor {
 
 	private boolean collidesclimpoben() {
 		for (float step = 0; step <= getWidth(); step += increment)
-			if (isCellclimp(getX() + step, getY() - getHeight()))
+			if (isCellclimp(getX() + step, getY() - step))
 				return true;
 		return false;
 	}
 
 	private boolean collidesclimpunten() {
 		for (float step = 0; step <= getWidth(); step += increment)
-			if (isCellclimp(getX() + step, getY() + getHeight()))
+			if (isCellclimp(getX() + step, getY() + (getHeight() / 2)))
 				return true;
 		return false;
 	}
@@ -251,7 +267,6 @@ public class Player extends Sprite implements InputProcessor {
 
 		if (climb == true) {
 			velocity.y = speed / 2;
-			gravity = 0;
 
 		}/*
 		 * else { velocity.y = 0; gravity = 60 * 1.9f;
@@ -275,7 +290,7 @@ public class Player extends Sprite implements InputProcessor {
 		case Keys.W:
 			canclimp();
 			jump();
-
+			climbup = true;
 			break;
 		case Keys.A:
 			velocity.x = -speed;
@@ -285,6 +300,11 @@ public class Player extends Sprite implements InputProcessor {
 			velocity.x = speed;
 			// animationTime = 0;
 			break;
+		case Keys.S:
+			if (climbdown == true) {
+				velocity.y = -speed / 2;
+				break;
+			}
 		}
 
 		return true;
@@ -295,8 +315,14 @@ public class Player extends Sprite implements InputProcessor {
 		switch (keycode) {
 
 		case Keys.W:
-			canclimp();
 
+			if (climb == true) {
+				velocity.y = 0;
+
+			}
+			break;
+		case Keys.S:
+			velocity.y = 0;
 		case Keys.A:
 		case Keys.D:
 			velocity.x = 0;
@@ -307,12 +333,6 @@ public class Player extends Sprite implements InputProcessor {
 
 	@Override
 	public boolean keyTyped(char character) {
-		switch (character) {
-		case Keys.S:
-			canclimp();
-
-			break;
-		}
 
 		return true;
 	}
